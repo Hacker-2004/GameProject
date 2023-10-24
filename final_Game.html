@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+    <html>
+        <head><title>Monkey Bowl</title>
+            <style>
+                canvas{border:2px solid black;}
+            </style>
+            <script src='Sprites_Monkey.js'></script>
+            <script src="Point_Sprites.js"></script>
+            <script src="Bowl.js"></script>
+            <script>
+                // key code checker
+                function keyUpHandler(e){
+				switch(e.keyCode){
+					case 37: keys.left=false; break;
+					case 39: keys.right=false; break;
+				}			
+			}
+			function keyDownHandler(e){
+				switch(e.keyCode){
+					case 37: keys.left=true; break;
+					case 39: keys.right=true; break;
+				}
+			}
+        // main var
+                var canvas,ctx;
+                var time,speed,timeSpeed,timeCheck;
+        // Images of main char
+            var back= new Image();
+                back.src="forest.png";
+            var blMoney=new Image();
+                blMoney.src="Moneky_final.png";
+            var lbMonkey=new Image();
+                lbMonkey.src="Monekylb_final.png";
+            var img=new Image();
+            var loseScreen=new Image();
+                loseScreen.src="lose.png";
+            var winScreen=new Image();
+                winScreen.src="win.jpg";
+        // drops
+            var banana=new Image();
+                banana.src="banana.png";
+            var grape=new Image();
+                grape.src="grape.png";
+            var tnt=new Image();
+                tnt.src="tnt.png";;
+            var stone=new Image();
+                stone.src="stone.png";
+             var box= new Image();
+                box.src="box.png";
+            var bomb=new Image();
+                bomb.src="bomb.png";
+            var heart=new Image();
+                heart.src="hearts.png";
+            var chill=new Image();
+                chill.src="chill.png";
+            var catcus=new Image();
+                catcus.src="catcus.png";
+        // var for percent
+            var tntDrop;
+            var grapeDrop;
+            var boxDrop;
+            var StoneDrop;
+            var bananaDrop;
+            var bombDrop;
+            var heartdrop;
+            var chillDrop;
+            var catcusDrop;
+        // movemnts
+            var keys;
+        // Main player
+            var Monkey;
+        // bowls call from Js
+          //  var Bowls;
+        // score 
+            var score;
+        // lifeline
+            var lifeline;
+        // levels
+            var levels;
+        // drop var array
+            var drop;
+        // frame width and height
+            var imgWidth,imgHeight;
+        // music
+            var bg;
+            var bg1;
+            var bg2;
+            var tntB;
+            var click;
+            var noise;
+            var tntsound;
+                function initialize(){
+                    canvas=document.getElementById("canvas");
+                    ctx=canvas.getContext('2d');
+                    document.getElementById('stop').style.display = 'none';
+                    document.getElementById('canvas').style.display = 'block';
+                    var color=window.prompt("Which color Monkey you want? \n Options are Black or Light Brown. \n Type the color as shown above.\n  If anything spelled wrong then the color will be black");
+                // rules tell
+                    window.alert("Game rules:\n If you eat stone lose:1 and eat box lose:5 or 2 points it depends on points.\n If you eat Grapes earn:5 or 2 points it depends and Bananas earn:1 points.\n If you eat Tnt or Bomb you will lose a life. Your levels will increase or decrease based on your score.\n If you eat chill your speed will increase for 3 second.\n If you eat Catcus your speed will decrease for 3 second\n Hearts will fall if your lifeline if below 2 and you are in level 1 or level 2"); 
+                // game score,live,level
+                    time=0;
+                    lifeline=3;
+                    score=0;
+                    levels=1;
+                    timeSpeed=180;
+                    timeCheck=false;
+                    bg=document.getElementById("levels1");
+                    bg1=document.getElementById("levels2");
+                    bg2=document.getElementById("levels3");
+                    tntB=document.getElementById("Blasts");
+                    click=document.getElementById("eating");
+                    noise=document.getElementById("Fush");
+                    tntsound=document.getElementById("sound");
+                    heartbeatSound=document.getElementById("Heart");
+                    lifeDropS=document.getElementById("life");
+                    lostPg=document.getElementById("loser");
+                    winPg=document.getElementById("winner");
+                    fireSound=document.getElementById("fireS");
+                    catcusSound=document.getElementById("catcusS");
+                // color assigen
+                    if(color=="Black"){
+                        img=blMoney;
+                        imgWidth=120;
+                        imgHeight=127;
+                    }
+                    else if(color=="Light Brown"){
+                        img=lbMonkey;
+                        imgWidth=118;
+                        imgHeight=126;
+                    }
+                    else{
+                        img=blMoney;
+                        imgWidth=120;
+                        imgHeight=127;
+                        color="Black";
+                    }
+                // key movemnets 
+                    keys={
+                        left:false,
+                        right:false
+                    };
+                // main char movment 
+                    Monkey=new Sprites_Monkey(425,280,1,img,imgWidth,imgHeight, 9);
+                // array
+                    drop=[];
+                    speed=0;
+                // listener
+                    document.addEventListener("keydown", keyDownHandler);
+			    	document.addEventListener("keyup", keyUpHandler);
+                    update();
+                }
+                function update(){
+                // time count
+                    time++;
+                // score checker
+                    if(score>=0){
+                        levels=1;
+                        bg.play();
+                        bg1.pause();
+                    }
+                    if(score>=50){
+                        levels=2;
+                        bg.pause();
+                        bg1.play();
+                        bg2.pause();
+                    }
+                    if(score>=100){
+                        levels=3;
+                        bg1.pause();
+                        bg2.play();
+                        bg.pause();
+                    }
+                    if(score>=150){
+                // key movemnets 
+                        bg2.pause();
+                        noise.pause();
+                        tntsound.pause();
+                        click.pause();
+                        tntB.pause();
+					    keys.right=false;
+					    keys.left=false;
+                        winPg.play();
+                // life ?
+                        for(var y=0;y<drop.length;y++){
+						    drop.splice(y,1);
+					    }
+                    }
+                // levels checkers
+                     if(levels==1){
+                        tntDrop=0.05;
+                        bananaDrop=.25;
+                        grapeDrop=.25;
+                        StoneDrop=.25;
+                        boxDrop=0;
+                        if(lifeline==1){
+                            heartdrop=1;
+                        }
+                        chillDrop=.10;
+                        catcusDrop=.10;
+                    }
+                     if(levels==2){
+                        tntDrop=0.10;
+                        bananaDrop=.35;
+                        grapeDrop=.25;
+                        StoneDrop=.10;
+                        boxDrop=.15;
+                        if(lifeline==1){
+                            heartdrop=.50;
+                        }
+                        chillDrop=.05;
+                        catcusDrop=.15;
+                    }
+                     if(levels==3){
+                        tntDrop=0.15;
+                        bananaDrop=.35;
+                        grapeDrop=.35;
+                        StoneDrop=.15;
+                        boxDrop=.15;
+                        bombDrop=.20;
+                        chillDrop=.01;
+                        catcusDrop=.30;
+                    }
+                // monkey movemnts 
+                    Monkey.movment(canvas,keys,time,speed,timeCheck);
+                   // Bowls=new Bowl(Monkey.x,Monkey.y,Monkey.frameX,Monkey.frameY,color);
+                // drops chaning
+                // level 1 drops
+                        if(score>=0 && score<=50 && lifeline>0){
+                    // banana drop
+                            if(Math.random()<=bananaDrop){
+                                if(time%90==0){
+					                drop.push(new Point_Sprites(banana, parseInt(Math.random()*(canvas.width-2*banana.width)), parseInt(Math.random()*3)));
+				                }
+                            }
+                    // grape drop
+                            if(Math.random()<=grapeDrop){
+                                if(time%140==0){
+					                drop.push(new Point_Sprites(grape, parseInt(Math.random()*(canvas.width-2*grape.width)), parseInt(Math.random()*3)));
+				                }
+                             }
+                    // Stone drop
+                            if(Math.random()<=StoneDrop){
+                                if(time%40==0){
+					                drop.push(new Point_Sprites(stone, parseInt(Math.random()*(canvas.width-2*stone.width)), parseInt(Math.random()*3)));
+				                }
+                            }
+                    // tnt drop
+                            if(Math.random()<=tntDrop){
+                                if(time%60==0){
+					                drop.push(new Point_Sprites(tnt, parseInt(Math.random()*(canvas.width-2*tnt.width)), parseInt(Math.random()*3))); 
+                                    tntsound.play();
+                                }
+                            }
+                    // heart Drop
+                            if(Math.random()<=heartdrop && lifeline==1){
+                                if(time%400==0){
+                                drop.push(new Point_Sprites(heart,parseInt(Math.random()*(canvas.width-2*heart.width)),parseInt(Math.random()*3)));
+                                heartbeatSound.play();
+                                }
+                            }
+                    // chill drop
+                            if(Math.random()<=chillDrop){
+                                if(time%500==0){
+                                    drop.push(new Point_Sprites(chill,parseInt(Math.random()*(canvas.width-2*chill.width)),parseInt(Math.random()*3)));
+                                }
+                            }
+                    // catucs drop
+                            if(Math.random()<=catcusDrop){
+                                if(time%500==0){
+                                    drop.push(new Point_Sprites(catcus,parseInt(Math.random()*(canvas.width-2*catcus.width)),parseInt(Math.random()*3)));
+                                }
+                            }
+                        }
+                    // level 2 drops
+                        if(score>50 && score<=100 && lifeline>0){
+                    // banana drop
+                            if(Math.random()<=bananaDrop){
+                                if(time%60==0){
+					                drop.push(new Point_Sprites(banana, parseInt(Math.random()*(canvas.width-2*banana.width)), parseInt(Math.random()*6+.5)));
+				                }
+                            }
+                    // grape drop
+                            if(Math.random()<=grapeDrop){
+                                if(time%90==0){
+					                drop.push(new Point_Sprites(grape, parseInt(Math.random()*(canvas.width-2*grape.width)), parseInt(Math.random()*6+.5)));
+				                }
+                             }
+                    // Stone drop
+                            if(Math.random()<=StoneDrop){
+                                if(time%65==0){
+					                drop.push(new Point_Sprites(stone, parseInt(Math.random()*(canvas.width-2*stone.width)), parseInt(Math.random()*6+.5)));
+				                }
+                            }
+                    // tnt drop
+                            if(Math.random()<=tntDrop){
+                                if(time%70==0){
+					                drop.push(new Point_Sprites(tnt, parseInt(Math.random()*(canvas.width-2*tnt.width)), parseInt(Math.random()*6+.5)));
+                                    tntsound.play();
+                                }
+                            }
+                    // box drop
+                            if(Math.random()<=boxDrop){
+                                if(time%75==0){
+					                drop.push(new Point_Sprites(box, parseInt(Math.random()*(canvas.width-2*box.width)), parseInt(Math.random()*6+.5)));
+				                }
+                            }
+                    // heart drop
+                            if(Math.random()<=heartdrop){
+                                if(time%400==0){
+                                drop.push(new Point_Sprites(heart,parseInt(Math.random()*(canvas.width-2*heart.width)),parseInt(Math.random()*3)));
+                                }
+                            }
+                    // chill drop
+                            if(Math.random()<=chillDrop){
+                                if(time%500==0){
+                                    drop.push(new Point_Sprites(chill,parseInt(Math.random()*(canvas.width-2*chill.width)),parseInt(Math.random()*3)));
+                                }
+                            }
+                    // catcus drop
+                            if(Math.random()<=catcusDrop){
+                                if(time%500==0){
+                                    drop.push(new Point_Sprites(catcus,parseInt(Math.random()*(canvas.width-2*catcus.width)),parseInt(Math.random()*3)));
+                                }
+                            }
+                        }
+                    // level 3 drops
+                        if(score>=101 && score<=150 && lifeline>0){
+                    // banana drop
+                            if(Math.random()<=bananaDrop){
+                                if(time%90==0){
+					                drop.push(new Point_Sprites(banana, parseInt(Math.random()*(canvas.width-2*banana.width)), parseInt(Math.random()*8+.5)));
+				                }
+                            }
+                    // grape drop
+                            if(Math.random()<=grapeDrop){
+                                if(time%75==0){
+					                drop.push(new Point_Sprites(grape, parseInt(Math.random()*(canvas.width-2*grape.width)), parseInt(Math.random()*8+.5)));
+				                }
+                             }
+                    // Stone drop
+                            if(Math.random()<=StoneDrop){
+                                if(time%60==0){
+					                drop.push(new Point_Sprites(stone, parseInt(Math.random()*(canvas.width-2*stone.width)), parseInt(Math.random()*8+.5)));
+				                }
+                            }
+                    // tnt drop
+                            if(Math.random()<=tntDrop){
+                                if(time%120==0){
+					                drop.push(new Point_Sprites(tnt, parseInt(Math.random()*(canvas.width-2*tnt.width)), parseInt(Math.random()*8+.5)));
+                                    tntsound.play();
+                                }
+                            }
+                    // box drop
+                            if(Math.random()<=boxDrop){
+                                if(time%60==0){
+					                drop.push(new Point_Sprites(box, parseInt(Math.random()*(canvas.width-2*box.width)), parseInt(Math.random()*8+.5)));
+				                }
+                            }
+                    // bomb drop
+                            if(Math.random()<=bombDrop){
+                                if(time%120==0){
+					                drop.push(new Point_Sprites(bomb, parseInt(Math.random()*(canvas.width-2*bomb.width)), parseInt(Math.random()*8+.5)));
+                                    noise.play();
+                                }
+                            }
+                    // chill drop
+                            if(Math.random()<=chillDrop){
+                                if(time%300==0){
+                                    drop.push(new Point_Sprites(chill,parseInt(Math.random()*(canvas.width-2*chill.width)),parseInt(Math.random()*3)));
+                                }
+                            }
+                    // catcus drop
+                            if(Math.random()<=catcusDrop){
+                                if(time%300==0){
+                                    drop.push(new Point_Sprites(catcus,parseInt(Math.random()*(canvas.width-2*catcus.width)),parseInt(Math.random()*3)));
+                                }
+                            }
+                        }
+                    /*
+                  if(time%60==0){
+					drop.push(new Point_Sprites(box, parseInt(Math.random()*(canvas.width-2*box.width)), parseInt(Math.random()*2+.5)));
+				}*/
+                if(lifeline==0){
+                // key movemnets and music block
+                        bg2.pause();
+                        bg1.pause();
+                        bg.pause();
+                        click.pause();
+                        noise.pause();
+                        tntsound.pause();
+                        lostPg.play();
+					    keys.right=false;
+					    keys.left=false;
+                // life ?
+                         for(var y=0;y<drop.length;y++){
+						    drop.splice(y,1);
+					    }
+                     }
+            // how to check drops and score count
+                    for(var z=0;z<drop.length;z++){
+                        drop[z].move();
+                        if(drop[z].img.y>canvas.height){
+                                tntsound.pause();
+                                noise.pause();
+                                heartbeatSound.pause();
+                                drop.splice(z,1);
+					    }
+                            if(Monkey.x<=drop[z].x+drop[z].img.width &&
+                            Monkey.x+Monkey.imgWidth>=drop[z].x &&
+					        Monkey.y<=drop[z].y+drop[z].img.height &&
+					        Monkey.y+Monkey.imgHeight>=drop[z].y){
+                                if(drop[z].img.src==banana.src){
+							        score+=1;
+                                }
+                                if(drop[z].img.src==stone.src && score>0){
+							        score-=1;
+                                }
+                                if(drop[z].img.src==grape.src){
+							        if(Math.random()<=.50){
+                                        score+=2;
+                                    }
+                                    else{
+                                    score+=5;
+                                    }
+                                }
+                                if(drop[z].img.src==box.src){
+							        if(Math.random()<=.50){
+                                        score-=2;
+                                    }
+                                    else{
+                                    score-=5;
+                                    }
+                                }
+                                if(drop[z].img.src==tnt.src){
+                                   tntsound.pause();
+                                    tntB.play();
+                                    lifeline--;
+                                }
+                                if(drop[z].img.src==bomb.src){
+							        noise.pause();
+                                    tntB.play();
+                                    lifeline--;
+                                }
+                                if(drop[z].img.src==heart.src){
+                                    heartbeatSound.pause();
+                                    lifeDropS.play();
+                                    lifeline++;
+                                }
+                                if(drop[z].img.src==chill.src){
+                                    speed=1;
+                                    timeCheck=true;
+                                    fireSound.play();
+                                }
+                                if(drop[z].img.src==catcus.src){
+                                    speed=-1;
+                                    timeCheck=true;
+                                    catcusSound.play();
+                                }
+                                click.play();
+                                drop.splice(z, 1);
+                            }
+                    }
+                    if(timeCheck==true){
+                        timeSpeed--;
+                        if(timeSpeed==0){
+                            timeCheck=false;
+                            timeSpeed=180;
+                            speed=0;
+                        }
+                    }
+                    if(lifeline>0 && score<150){
+                    requestAnimationFrame(update);
+                    }
+                    draw();        
+                }
+                function draw(){
+                    ctx.clearRect(0,0,canvas.width,canvas.height);
+                    ctx.drawImage(back,0,0,canvas.width,canvas.height);
+                    Monkey.draw(ctx);
+                    //Bowls.draw(ctx);
+                    drop.forEach(function(drops){
+					    drops.draw(ctx);
+				    });
+                    ctx.beginPath();
+                    ctx.rect(0,410,canvas.width,40);
+                    ctx.fillStyle="#D2B48C";
+                    ctx.fill();
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.font="24pt Indie Flower";
+                    ctx.strokeStyle="green";
+                    ctx.strokeText("Level:",50,440,90);
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.strokeStyle="blue";
+                    ctx.strokeText(levels,130,442,90);
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.font="24pt Indie Flower";
+                    ctx.strokeStyle="green";
+                    ctx.strokeText("Score:",375,440,90);
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.strokeStyle="blue";
+                    ctx.strokeText(score,460,442,90);
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.strokeStyle="green";
+                    ctx.strokeText("Life left:",680,440,90);
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.strokeStyle="blue";
+                    ctx.strokeText(lifeline,770,442,90);
+                    ctx.closePath();
+                    if(lifeline==0){
+                        bg2.pause();
+                        bg1.pause();
+                        bg.pause();
+                        click.pause();
+                        noise.pause();
+                        tntsound.pause();
+                        lostPg.play();
+                        ctx.rect(0,410,canvas.width,40);
+                        ctx.beginPath()
+                        ctx.rect(0,0,canvas.width,canvas.height);
+                        ctx.drawImage(loseScreen,0,0,canvas.width,canvas.height);
+                        ctx.beginPath();
+                        ctx.beginPath()
+                        ctx.font="75pt Indie Flower";
+                        ctx.fillStyle="white";
+                        ctx.strokeStyle="#C7A338";
+                        ctx.fillText("Game over",300,100,250);
+                        ctx.strokeText("Game over",300,100,250);
+                        ctx.closePath();
+                        ctx.beginPath()
+                        ctx.font="50pt Indie Flower";
+                        ctx.fillStyle="white";
+                        ctx.strokeStyle="#C7A338";
+                        ctx.fillText("Good Luck next time. Try to beat your score: "+score,180,330,500);
+                        ctx.strokeText("Good Luck next time. Try to beat your score: "+score,180,330,500);
+                        ctx.closePath();
+                        ctx.beginPath()
+                        ctx.font="50pt Indie Flower";
+                        ctx.fillStyle="white";
+                        ctx.strokeStyle="#C7A338";
+                        ctx.fillText("Try to win the game.",285,400,300);
+                        ctx.strokeText("Try to win the game.",285,400,300);
+                        ctx.closePath();
+                    }
+                    if(score>=150){
+                        bg2.pause();
+                        noise.pause();
+                        tntsound.pause();
+                        click.pause();
+                        tntB.pause();
+                        winPg.play();
+                        ctx.rect(0,410,canvas.width,40);
+                        ctx.beginPath();
+                        ctx.rect(0,0,canvas.width,canvas.height);
+                        ctx.drawImage(winScreen,0,0,canvas.width,canvas.height);
+                        if(lifeline==1){
+                        ctx.beginPath();
+                        ctx.font="75pt Indie Flower";
+                        ctx.fillStyle="white";
+                        ctx.strokeStyle="#C7A338";
+                        ctx.fillText("Game over",305,85,250);
+                        ctx.strokeText("Game over",305,85,250);
+                        ctx.closePath();
+                        ctx.beginPath();
+                        ctx.font="35pt Indie Flower";
+                        ctx.fillStyle="white";
+                        ctx.strokeStyle="#C7A338";
+                        ctx.fillText("Remaining life left: "+lifeline,250,150,350);
+                        ctx.strokeText("Remaining life left: "+lifeline,250,150,350);
+                        ctx.fillText("But I challenge you to get life left score to 2.",175,300,550);
+                        ctx.strokeText("But I challenge you to get life left score to 2.",175,300,550);
+                        ctx.fillText("Try to win the game with my challenge.",225,355,450);
+                        ctx.strokeText("Try to win the game with my challenge.",225,355,450);
+                        ctx.closePath();
+                        }
+                    if(lifeline==2){
+                        ctx.beginPath();
+                        ctx.font="75pt Indie Flower";
+                        ctx.fillStyle="white";
+                        ctx.strokeStyle="#C7A338";
+                        ctx.fillText("Game over",305,85,250);
+                        ctx.strokeText("Game over",305,85,250);
+                        ctx.closePath();
+                        ctx.beginPath();
+                        ctx.font="35pt Indie Flower";
+                        ctx.fillStyle="white";
+                        ctx.strokeStyle="#C7A338";
+                        ctx.fillText("Remaining life left: "+lifeline,250,150,350);
+                        ctx.strokeText("Remaining life left: "+lifeline,250,150,350);
+                        ctx.fillText("But I challenge you to get life left score to 3.",175,300,550);
+                        ctx.strokeText("But I challenge you to get life left score to 3.",175,300,550);
+                        ctx.fillText("Try to win the game with my challenge.",225,355,450);
+                        ctx.strokeText("Try to win the game with my challenge.",225,355,450);
+                        ctx.closePath();
+                    }
+                    if(lifeline==3){
+                        ctx.beginPath();
+                        ctx.font="75pt Indie Flower";
+                        ctx.fillStyle="white";
+                        ctx.strokeStyle="#C7A338";
+                        ctx.fillText("Game over",305,85,250);
+                        ctx.strokeText("Game over",305,85,250);
+                        ctx.closePath();
+                        ctx.beginPath();
+                        ctx.font="35pt Indie Flower";
+                        ctx.fillStyle="white";
+                        ctx.strokeStyle="#C7A338";
+                        ctx.fillText("Remaining life left: "+lifeline,250,150,350);
+                        ctx.strokeText("Remaining life left: "+lifeline,250,150,350);
+                        ctx.fillText("You have completed all the challenges. You are getting Master in the Game.",100,300,700);
+                        ctx.strokeText("You have completed all the challenges. You are getting Master in the Game.",100,300,700);
+                        ctx.fillText("But I challenge you to win the game again with same life left.",175,350,550);
+                        ctx.strokeText("But I challenge you to win the game again with same life left.",175,350,550);
+                        ctx.fillText("Try to win the game and complete my challenge to achieve mastery in the game!",100,400,700);
+                        ctx.strokeText("Try to win the game and complete my challenge to achieve mastery in the game!",100,400,700);
+                        ctx.closePath();
+                    }
+                        ctx.closePath();
+                    }
+                    }
+            </script>
+        </head>
+            <body>
+                <section id="stop">
+                    <div style="background-image:url('forest.png');background-repeat: no-repeat;width: 850px;height: 450px;"></div>
+                    <h1 style="margin-left:250px;margin-top: -400px;font-family: 'Stint Ultra Condensed', cursive;color: #d4862b;font-size:55px;">
+                        Monkey Bowl
+                    </h1>
+                    <div style="margin-left: 375px;font-size: 50px;margin-top:60px;color:#632525;" onclick=initialize()>
+                        Play
+                    </div>
+                    <img src="New Project.png" style="margin-top:55px;margin-left: 300px;">
+            </section>
+               <!--- <img src="forest.jpg" style="width:850px;height: 450px;">-->
+                <canvas id="canvas" width="850px" height="450px" style="display:none;"></canvas>
+                <audio src="tntDrop.mp3" id="sound" type="audio/mpeg" preload="auto" controls="none" style="display:none"></audio>
+                <audio src="level1.mp3" id="levels1" type="audio/mpeg" preload='auto' controls='none' style='display:none'  loop='true'></audio>
+                <audio src="level2.mp3" id="levels2" type="audio/mpeg" preload='auto' controls='none' style='display:none' loop='true'></audio>
+                <audio src="level3.mp3" id="levels3" type="audio/mpeg" preload='auto' controls='none' style='display:none' loop='true'></audio>
+                <audio src="Stomach.mp3" id="stomach" type="audio/mpeg" preload='auto' controls='none' style='display:none' ></audio>
+                <audio src="Eating.mp3" id="eating" type="audio/mpeg" preload='auto' controls='none' style='display:none'></audio>
+                <audio src="Blast.mp3" id="Blasts" type="audio/mpeg" preload='auto' controls='none' style='display:none'></audio>
+                <audio src="fush.mp3" id="Fush" type="audio/mpeg" preload="auto" controls="none" style="display:none"></audio>
+                <audio src="heartbeat.mp3" id="Heart" type="audio/mpeg" preload="auto" controls="none" style="display:none"></audio>
+                <audio src="life.mp3" id="life" type="audio/mpeg" preload="auto" controls="none" style="display:none"></audio>
+                <audio src="lost.mp4" id="loser" type="audio/mpeg" preload="auto" controls="none" style="display:none"></audio>
+                <audio src="winner.mp3" id="winner" type="audio/mpeg" preload="auto" controls="none" style="display:none"></audio>
+                <audio src="fire.mp3" id="fireS" type="audio/mpeg" preload="auto" controls="none" style="display:none"></audio>
+                <audio src="lost1.mp4" id="catcusS" type="audio/mpeg" preload="auto" controls="none" style="display:none"></audio>
+            </body>
+    </html>
